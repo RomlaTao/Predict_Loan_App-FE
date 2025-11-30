@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { login as apiLogin, logout as apiLogout } from '../services/authService';
+import { isAdmin, isStaff, isRiskAnalyst, hasRole, getDefaultRouteByRole } from '../utils/rbac';
 
 // 1. Tạo Context
 const AuthContext = createContext(null);
@@ -48,13 +49,34 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    // 6. Cung cấp state và hàm cho các component con
+    // 6. Helper methods cho RBAC
+    const getRole = () => authData?.role || null;
+    const getUserId = () => authData?.userId || null;
+    const getEmail = () => authData?.email || null;
+    const getAccessToken = () => authData?.accessToken || null;
+    const getRefreshToken = () => authData?.refreshToken || null;
+    const getTokenType = () => authData?.tokenType || 'Bearer';
+
+    // 7. Cung cấp state và hàm cho các component con
     const value = {
         authData,
         isAuthenticated: !!authData, // True nếu authData có, false nếu là null
         loading,
         login,
         logout,
+        // RBAC helpers
+        getRole,
+        getUserId,
+        getEmail,
+        getAccessToken,
+        getRefreshToken,
+        getTokenType,
+        // Role checking methods
+        isAdmin: () => isAdmin(getRole()),
+        isStaff: () => isStaff(getRole()),
+        isRiskAnalyst: () => isRiskAnalyst(getRole()),
+        hasRole: (allowedRoles) => hasRole(getRole(), allowedRoles),
+        getDefaultRoute: () => getDefaultRouteByRole(getRole()),
     };
 
     return (
@@ -64,7 +86,7 @@ export const AuthProvider = ({ children }) => {
     );
 };
 
-// 7. Tạo hook tùy chỉnh để dễ dàng sử dụng context
+// 8. Tạo hook tùy chỉnh để dễ dàng sử dụng context
 export const useAuth = () => {
     const context = useContext(AuthContext);
     if (!context) {

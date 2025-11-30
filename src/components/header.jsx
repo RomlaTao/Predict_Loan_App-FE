@@ -1,6 +1,12 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import {
+    IconButton,
+    Menu,
+    MenuItem,
+    Typography,
+} from '@mui/material';
 
 // CSS cho Header
 const headerStyles = {
@@ -22,33 +28,38 @@ const logoStyles = {
 
 const navStyles = {
     display: 'flex',
-    gap: '1.5rem',
+    gap: '1rem',
     alignItems: 'center',
-};
-
-const navLinkStyles = {
-    textDecoration: 'none',
-    color: '#007bff',
-    fontWeight: '500',
 };
 
 const userInfoStyles = {
     color: '#555',
-    marginRight: '1rem'
+    marginRight: '0.5rem'
 };
-
-const logoutButtonStyles = {
-    background: 'none',
-    border: 'none',
-    color: '#dc3545',
-    cursor: 'pointer',
-    fontWeight: '500',
-    fontSize: '1rem'
-};
-
 
 function Header() {
     const { isAuthenticated, authData, logout } = useAuth();
+    const navigate = useNavigate();
+    const [anchorEl, setAnchorEl] = useState(null);
+    const open = Boolean(anchorEl);
+
+    const handleMenuClick = (event) => {
+        setAnchorEl(event.currentTarget);
+    };
+
+    const handleMenuClose = () => {
+        setAnchorEl(null);
+    };
+
+    const handleProfileClick = () => {
+        handleMenuClose();
+        navigate('/profile');
+    };
+
+    const handleLogoutClick = () => {
+        handleMenuClose();
+        logout();
+    };
 
     return (
         <header style={headerStyles}>
@@ -59,16 +70,54 @@ function Header() {
                 {isAuthenticated ? (
                     // Đã đăng nhập
                     <>
-                        <span style={userInfoStyles}>Chào, {authData.email}</span>
-                        <button onClick={logout} style={logoutButtonStyles}>
-                            Đăng Xuất
-                        </button>
+                        <Typography variant="body1" sx={userInfoStyles}>
+                            Chào, {authData.email}
+                        </Typography>
+                        <IconButton
+                            onClick={handleMenuClick}
+                            size="small"
+                            aria-controls={open ? 'user-menu' : undefined}
+                            aria-haspopup="true"
+                            aria-expanded={open ? 'true' : undefined}
+                            sx={{ padding: '4px' }}
+                        >
+                            <img 
+                                src="/menu-meatballs-1.svg" 
+                                alt="Menu" 
+                                style={{ width: '24px', height: '24px' }}
+                            />
+                        </IconButton>
+                        <Menu
+                            id="user-menu"
+                            anchorEl={anchorEl}
+                            open={open}
+                            onClose={handleMenuClose}
+                            MenuListProps={{
+                                'aria-labelledby': 'user-menu-button',
+                            }}
+                            anchorOrigin={{
+                                vertical: 'bottom',
+                                horizontal: 'right',
+                            }}
+                            transformOrigin={{
+                                vertical: 'top',
+                                horizontal: 'right',
+                            }}
+                        >
+                            <MenuItem onClick={handleProfileClick}>
+                                Hồ sơ
+                            </MenuItem>
+                            <MenuItem onClick={handleLogoutClick} sx={{ color: 'error.main' }}>
+                                Đăng xuất
+                            </MenuItem>
+                        </Menu>
                     </>
                 ) : (
                     // Chưa đăng nhập
                     <>
-                        <Link to="/login" style={navLinkStyles}>Đăng Nhập</Link>
-                        <Link to="/signup" style={navLinkStyles}>Đăng Ký</Link>
+                        <Link to="/login" style={{ textDecoration: 'none', color: '#007bff', fontWeight: '500' }}>
+                            Đăng Nhập
+                        </Link>
                     </>
                 )}
             </nav>
