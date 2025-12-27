@@ -331,7 +331,7 @@ function CustomerEditPage() {
                 value={formData.mortgage}
                 onChange={handleNumericChange}
                 fullWidth
-                inputProps={{ min: 0, step: 0.01 }}
+                helperText="VND"
               />
             </Grid>
           </Grid>
